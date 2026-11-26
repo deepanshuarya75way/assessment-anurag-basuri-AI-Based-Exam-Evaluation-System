@@ -140,7 +140,7 @@ export async function evaluateAnswer(
 				payload,
 				{
 					headers: { 'Content-Type': 'application/json' },
-					timeout: EVAL_TIMEOUT_MS,
+					timeout: 60000,
 				}
 			);
 
