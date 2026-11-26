@@ -86,7 +86,7 @@ const SingleEvaluationSchema = new mongoose.Schema(
 				max: 1,
 			},
 
-			flags: [{type:string}],
+			flags: [{type:String}],
 
 			decision: String,
 			originalMarks: Number,

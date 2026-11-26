@@ -133,7 +133,7 @@ async def evaluate_answer(req: EvaluateRequest):
         if confidence < 0.65  and "low_confidence" not in flags:
             flags.append("low_confidence")
         
-        if not req.refrence_answer and sources_used == 0:
+        if not req.reference_answer and sources_used == 0:
             if "insufficient_refrence" not in flags:
                 flags.append("insufficient_refrence")
 

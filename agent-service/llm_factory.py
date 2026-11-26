@@ -10,7 +10,7 @@ from typing import Tuple, Optional
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from config import LLM_TEMPERATURE, LLM_MAX_TOKENS
+from config import LLM_TEMPERATURE, LLM_MAX_TOKENS  # pyright: ignore[reportImplicitRelativeImport]
 
 class LLMProviderExhaustedError(Exception):
     """Raised when no LLM providers are available or functioning."""
@@ -25,11 +25,11 @@ def _build_llm(provider: str, api_key: str) -> BaseChatModel:
 
     if provider == "groq":
         return ChatOpenAI(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             api_key=api_key,
             base_url="https://api.groq.com/openai/v1",
             temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
+            max_tokens=LLM_MAX_TOKENS,  # pyright: ignore[reportCallIssue]
         )
 
     if provider == "cerebras":
@@ -38,7 +38,7 @@ def _build_llm(provider: str, api_key: str) -> BaseChatModel:
             api_key=api_key,
             base_url="https://api.cerebras.ai/v1",
             temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
+            max_tokens=LLM_MAX_TOKENS,  # pyright: ignore[reportCallIssue]
         )
 
     if provider == "openrouter":
@@ -47,7 +47,7 @@ def _build_llm(provider: str, api_key: str) -> BaseChatModel:
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
             temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
+            max_tokens=LLM_MAX_TOKENS,  # pyright: ignore[reportCallIssue]
         )
 
     if provider == "huggingface":
@@ -56,7 +56,7 @@ def _build_llm(provider: str, api_key: str) -> BaseChatModel:
             api_key=api_key,
             base_url="https://router.huggingface.co/v1",
             temperature=LLM_TEMPERATURE,
-            max_tokens=LLM_MAX_TOKENS,
+            max_tokens=LLM_MAX_TOKENS,  # pyright: ignore[reportCallIssue]
         )
 
     raise ValueError(f"Unknown LLM provider: {provider}")
