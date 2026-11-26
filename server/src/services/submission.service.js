@@ -420,3 +420,22 @@ export const getExportData = async (examId, teacherId) => {
 		.lean();
 	return { exam, submissions };
 };
+
+// task 1
+// creating the review queue function
+export const getReviewQueue = async(teacherId) => {
+	const submissions = await Submissions.find({
+		evaluations: {
+			$elemMatch: {
+				"evaluation.review.required": true,
+				"evaluation.review.status": "pending",
+			},
+		},
+	}).populate("exam")
+	.populate("student")
+	.populate("evaluations.question");
+
+	return submissions.filter(
+		(submission) => String(submission.exam?.createdBy) === String(teacherId)
+	);
+};
