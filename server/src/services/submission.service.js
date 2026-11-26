@@ -154,6 +154,7 @@ export const submit = async (examId, studentId, submissionType = 'manual') => {
 
 import { evaluateSubmissionAnswers } from './jobQueue.service.js';
 import { evaluateAnswer } from './evaluation.service.js';
+import Question from '../models/question.model.js';
 
 export const updateEvaluation = async (submissionId, teacherId, evaluations) => {
 	if (!Array.isArray(evaluations) || evaluations.length === 0)
@@ -422,7 +423,7 @@ export const getExportData = async (examId, teacherId) => {
 };
 
 // task 1
-// creating the review queue function
+// creating the review queue service function
 export const getReviewQueue = async(teacherId) => {
 	const submissions = await Submissions.find({
 		evaluations: {
@@ -438,4 +439,71 @@ export const getReviewQueue = async(teacherId) => {
 	return submissions.filter(
 		(submission) => String(submission.exam?.createdBy) === String(teacherId)
 	);
+};
+
+// Creating the review decision service function
+export const decideReview = async(submissionId,
+	questionId,
+	teacherId,
+	{decision, marks, reason}
+) => {
+	if(!["accepted", "modified", "rejected"].includes(decison)) {
+		throw ApiError.BadRequest("Invalid decision");
+	}
+
+	if(!reason?.trim()) {
+		throw ApiError.BadRequest("Reason is required");
+	}
+
+	const submission = await Submission.findById(submissionId).populate("exam");
+
+	if(!submission) {
+		throw ApiError.NotFound("Submission not found");
+	}
+
+	if(String(submission.exam?.createdBy) !== String(teacherId)) {
+		throw ApiError.NotFound("Submission not found");
+	}
+	
+	const entry = submission.evaluations.find((e)=> String(e.question) === String(questionId));
+
+	if(!entry) {
+		throw ApiError.NotFound("Evaluation not found");
+	}
+
+	const evaluation = entry.evaluation;
+	const review = evaluation.review;
+
+	if(!review?.required || review.status !== "pending") {
+		throw ApiError.BadRequest("Review is not pending");
+	}
+
+	const question = await Question.findById(questionId);
+	if(!question) {
+		throw ApiError.NotFound("Question not found");
+	}
+
+	const previousMarks = evaluation.marks;
+
+	finalMarks = decision === "accepted"? previousMarks:Number(marks);
+
+	if(
+		!Number.isFinite(finalMarks) || finalMarks < 0 || finalMarks > question.max_marks
+	) {
+		throw ApiError.BadRequest("Invalid Marks");
+	}
+
+	evaluation.marks = finalMarks;
+
+	review.status = decision;
+	review.decision = decision;
+	review.originalMarks = previousMarks;
+	review.finalMarks = finalMarks;
+	review.reason = reason.trim();
+	review.reviewedBy = teacherId;
+	review.reviewedAt = new Date();
+
+	await submission.save();
+
+	return submission;
 };
