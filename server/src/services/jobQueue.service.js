@@ -66,6 +66,8 @@ export async function evaluateSubmissionAnswers(submission) {
 			let evaluator = 'ai';
 			let conf = 0;
 			let flags = [];
+			let aiEvaluated = false;
+
 			const confidence_score = 0.65;
 
 			if (questionDoc.type === 'multiple-choice') {
@@ -98,8 +100,9 @@ export async function evaluateSubmissionAnswers(submission) {
 					marks = evalResult.score;
 					remarks = evalResult.review;
 					meta = evalResult.meta;
-					conf = Number(evalResult.confidence_score?? 0);
+					conf = Number(evalResult.confidence?? 0);
 					flags = Array.isArray(evalResult.flags)? evalResult.flags:[];
+					aiEvaluated = true;
 				} catch (e) {
 					console.error(
 						`[JOB_QUEUE] Evaluation error for question ${questionDoc._id}.`,
@@ -118,7 +121,7 @@ export async function evaluateSubmissionAnswers(submission) {
 			}
 
 			// for now flagging only the failed/fallback AI evaluations
-			const reviewRequired = evaluator === "system" || meta?.fallback === true || conf < confidence_score || flags.length > 0;
+			const reviewRequired = evaluator === "system" || (aiEvaluated && (meta?.fallback === true || conf < confidence_score || flags.length > 0));
 
 			return {
 				question: questionDoc._id,

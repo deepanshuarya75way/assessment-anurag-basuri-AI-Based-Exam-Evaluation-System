@@ -127,10 +127,16 @@ async def evaluate_answer(req: EvaluateRequest):
 
         if not isinstance(flags, list):
             flags = ["invalid_flags"]
+        else:
+            flags = [str(flag) for flag in flags if isinstance(flag, str)]
         
         if confidence < 0.65  and "low_confidence" not in flags:
             flags.append("low_confidence")
         
+        if not req.refrence_answer and sources_used == 0:
+            if "insufficient_refrence" not in flags:
+                flags.append("insufficient_refrence")
+
         return EvaluateResponse(  # pyright: ignore[reportCallIssue]
             score=score,
             review=review,

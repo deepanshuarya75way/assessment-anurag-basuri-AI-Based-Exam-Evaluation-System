@@ -148,12 +148,16 @@ export async function evaluateAnswer(
 			
 			const data = response.data;
 			
-			// Agent Service returns { score, review, meta }
+			// Agent Service returns { score, review, confidence, flags, meta }
 			const finalMarks = data.score != null ? Number(data.score) : 0;
 			const limitedReview = limitSentences(
 				typeof data.review === 'string' ? data.review : 'No review provided',
 				5,
 			);
+
+			const confidence = Number(data.confidence??0);
+
+			const flags = Array.isArray(data.flags)? data.flags.filter(flag => typeof flag === 'string'):[];
 
 			const meta = {
 				evalId,
@@ -164,7 +168,7 @@ export async function evaluateAnswer(
 			};
 
 			console.log(`[EVAL_SERVICE ${evalId}] Success score=${finalMarks}`);
-			return { score: finalMarks, review: limitedReview, meta };
+			return { score: finalMarks, review: limitedReview, confidence, flags, meta };
 		} catch (err) {
 			lastError = err;
 			console.error(
