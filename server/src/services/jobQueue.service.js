@@ -64,6 +64,9 @@ export async function evaluateSubmissionAnswers(submission) {
 			let remarks = 'Answer not provided.';
 			let meta = undefined;
 			let evaluator = 'ai';
+			let conf = 0;
+			let flags = [];
+			const confidence_score = 0.65;
 
 			if (questionDoc.type === 'multiple-choice') {
 				if (ans.responseOption && questionDoc.options) {
@@ -91,9 +94,12 @@ export async function evaluateSubmissionAnswers(submission) {
 						policy,
                         examDoc
 					);
+
 					marks = evalResult.score;
 					remarks = evalResult.review;
 					meta = evalResult.meta;
+					conf = Number(evalResult.confidence_score?? 0);
+					flags = Array.isArray(evalResult.flags)? evalResult.flags:[];
 				} catch (e) {
 					console.error(
 						`[JOB_QUEUE] Evaluation error for question ${questionDoc._id}.`,
@@ -104,13 +110,15 @@ export async function evaluateSubmissionAnswers(submission) {
 						'Evaluation failed due to a system error. A teacher will review this answer.';
 					meta = { fallback: true, type: 'controller-error', message: e.message };
 					evaluator = 'system';
+					conf = 0.5;
+					flags = ["AI evaluation failed"];
 				}
 			} else {
 				meta = { fallback: true, type: 'empty-answer' };
 			}
 
 			// for now flagging only the failed/fallback AI evaluations
-			const reviewRequired = evaluator === "system" || meta?.fallback === true;
+			const reviewRequired = evaluator === "system" || meta?.fallback === true || conf < confidence_score || flags.length > 0;
 
 			return {
 				question: questionDoc._id,
@@ -120,6 +128,8 @@ export async function evaluateSubmissionAnswers(submission) {
 					review: {
 						required: reviewRequired,
 						status: reviewRequired? "pending" : "not_required",
+						canfidence: conf,
+						flags,
 						originalMarks: marks,
 						reason: reviewRequired? "AI evaluation failed or used fallback." : "",
 					},

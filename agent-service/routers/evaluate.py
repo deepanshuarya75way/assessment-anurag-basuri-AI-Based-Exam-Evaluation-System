@@ -13,9 +13,9 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 
-from llm_factory import get_llm
-from rag.store import store
-from prompts.evaluation import get_evaluation_prompt
+from llm_factory import get_llm  # pyright: ignore[reportImplicitRelativeImport]
+from rag.store import store  # pyright: ignore[reportImplicitRelativeImport]
+from prompts.evaluation import get_evaluation_prompt  # pyright: ignore[reportImplicitRelativeImport]
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -41,6 +41,8 @@ class EvaluateRequest(BaseModel):
 class EvaluateResponse(BaseModel):
     score: int = Field(ge=0)
     review: str
+    confidence: float = Field(ge = 0, le = 1)
+    flags: List[str] = Field(default_factory=list)
     meta: Dict[str, Any]
 
 
@@ -55,7 +57,7 @@ async def evaluate_answer(req: EvaluateRequest):
     
     No outside knowledge is used.
     """
-    from session.manager import session_manager
+    from session.manager import session_manager  # pyright: ignore[reportImplicitRelativeImport]
     
     context_text = ""
     sources_used = 0
@@ -106,7 +108,7 @@ async def evaluate_answer(req: EvaluateRequest):
             )
         )
         
-        raw_text = response.content.strip()
+        raw_text = response.content.strip()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
         
         if raw_text.startswith("```"):
             lines = raw_text.split("\n")
@@ -117,10 +119,23 @@ async def evaluate_answer(req: EvaluateRequest):
         
         score = max(0, min(req.max_marks, int(result.get("score", 0))))
         review = result.get("review", "No review provided.")
+
+        confidence = float(result.get("confidence", 0.0))
+        confidence = max(0.0, min(1.0, confidence))
+
+        flags = result.get("flags", [])
+
+        if not isinstance(flags, list):
+            flags = ["invalid_flags"]
         
-        return EvaluateResponse(
+        if confidence < 0.65  and "low_confidence" not in flags:
+            flags.append("low_confidence")
+        
+        return EvaluateResponse(  # pyright: ignore[reportCallIssue]
             score=score,
             review=review,
+            confidence=confidence,
+            flags=flags,
             meta={
                 "evaluator": "strict-rag-ai",
                 "provider": provider,
@@ -132,7 +147,7 @@ async def evaluate_answer(req: EvaluateRequest):
         )
         
     except json.JSONDecodeError as e:
-        logger.error(f"[Eval] Failed to parse LLM JSON output: {e}\nRaw: {raw_text[:500]}")
+        logger.error(f"[Eval] Failed to parse LLM JSON output: {e}\nRaw: {raw_text[:500]}")  # pyright: ignore[reportPossiblyUnboundVariable]
         raise HTTPException(status_code=500, detail=f"LLM returned invalid JSON: {e}")
     except Exception as e:
         logger.error(f"[Eval] Evaluation failed: {e}")
