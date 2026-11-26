@@ -109,10 +109,20 @@ export async function evaluateSubmissionAnswers(submission) {
 				meta = { fallback: true, type: 'empty-answer' };
 			}
 
+			// for now flagging only the failed/fallback AI evaluations
+			const reviewRequired = evaluator === "system" || meta?.fallback === true;
+
 			return {
 				question: questionDoc._id,
 				evaluation: {
 					evaluator,
+					// add the new review
+					review: {
+						required: reviewRequired,
+						status: reviewRequired? "pending" : "not_required",
+						originalMarks: marks,
+						reason: reviewRequired? "AI evaluation failed or used fallback." : "",
+					},
 					marks,
 					remarks,
 					evaluatedAt: new Date(),

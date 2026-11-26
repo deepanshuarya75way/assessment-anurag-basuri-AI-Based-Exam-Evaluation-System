@@ -65,6 +65,9 @@ const SingleEvaluationSchema = new mongoose.Schema(
 			enum: ['ai', 'teacher', 'system'],
 			default: 'ai',
 		},
+
+		// Human in the Loop
+		// AI review addition
 		review : {
 			required: {
 				type: Boolean,
