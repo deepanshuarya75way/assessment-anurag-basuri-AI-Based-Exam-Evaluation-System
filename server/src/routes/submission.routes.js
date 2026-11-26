@@ -29,6 +29,8 @@ import {
 	exportExamSubmissionsList,
 	getSubmissionStatus,
 	overrideEvaluation,
+	getReviewQueue,
+	decideReview,
 } from '../controllers/submission.controller.js';
 
 const router = Router();
@@ -163,6 +165,18 @@ router.get(
 	param('id').notEmpty().withMessage('Submission ID is required'),
 	validate,
 	getSubmissionStatus,
+);
+
+router.get(
+	"/review-queue",
+	checkAuth,
+	getReviewQueue
+);
+
+router.patch(
+	"/:id/reviews/:questionId",
+	checkAuth,
+	decideReview
 );
 
 export default router;

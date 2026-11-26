@@ -137,6 +137,34 @@ const exportExamSubmissionsList = asyncHandler(async (req, res) => {
 	return sendCSVDowload(res, `submissions_exam_${safeExamTitle}.csv`, csv);
 });
 
+// controller for review check
+const getReviewQueue = asyncHandler(async(req, res) => {
+	const data = await SubmissionService.getReviewQueue(req.userDoc?._id || req.user?.id);
+
+	return ApiResponse.success(res, 
+		data,
+		"Review queue fetched successfully"
+	)
+});
+
+// controller for deciding the review
+export const decideReview = asyncHandler(
+	async(req, res) => {
+		const data = await SubmissionService.decideReview(
+			req.params.id,
+			req.params.questionId,
+			req.userDoc?._id || req.user?.id,
+			req.body
+		);
+		
+		return ApiResponse.success(
+			res,
+			data,
+			"Review decision saved"
+		);
+	}
+);
+
 export {
 	startSubmission,
 	submitSubmission,
@@ -158,4 +186,6 @@ export {
 	exportExamSubmissionsList,
 	getSubmissionStatus,
 	overrideEvaluation,
+	getReviewQueue,
+	decideReview,
 };
