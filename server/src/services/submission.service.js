@@ -425,7 +425,7 @@ export const getExportData = async (examId, teacherId) => {
 // task 1
 // creating the review queue service function
 export const getReviewQueue = async(teacherId) => {
-	const submissions = await Submissions.find({
+	const submissions = await Submission.find({
 		evaluations: {
 			$elemMatch: {
 				"evaluation.review.required": true,

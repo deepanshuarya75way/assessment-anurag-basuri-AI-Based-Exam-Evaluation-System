@@ -35,6 +35,19 @@ import {
 
 const router = Router();
 
+
+router.get(
+	"/review-queue",
+	checkAuth,
+	getReviewQueue
+);
+
+router.patch(
+	"/:id/reviews/:questionId",
+	checkAuth,
+	decideReview
+);
+
 // Directly test the AI evaluation service with a sample question/answer
 router.post('/test-evaluation', authLimiter, testEvaluationService);
 router.get('/my-submissions', checkAuth, verifyStudent, getMySubmissions);
@@ -167,16 +180,5 @@ router.get(
 	getSubmissionStatus,
 );
 
-router.get(
-	"/review-queue",
-	checkAuth,
-	getReviewQueue
-);
-
-router.patch(
-	"/:id/reviews/:questionId",
-	checkAuth,
-	decideReview
-);
 
 export default router;
