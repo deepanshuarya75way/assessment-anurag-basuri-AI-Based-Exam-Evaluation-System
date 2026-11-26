@@ -35,13 +35,14 @@ import {
 
 const router = Router();
 
-
+// task1
 router.get(
 	"/review-queue",
 	checkAuth,
 	getReviewQueue
 );
 
+// task 1
 router.patch(
 	"/:id/reviews/:questionId",
 	checkAuth,
