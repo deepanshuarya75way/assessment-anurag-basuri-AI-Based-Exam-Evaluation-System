@@ -65,6 +65,30 @@ const SingleEvaluationSchema = new mongoose.Schema(
 			enum: ['ai', 'teacher', 'system'],
 			default: 'ai',
 		},
+		review : {
+			required: {
+				type: Boolean,
+				default: false
+			},
+
+			status: {
+				type: String,
+				enum: ["not_required", "pending", "accepted", "rejected", "modified"],
+				default: "not_required"
+			},
+
+			decision: String,
+			originalMarks: Number,
+			finalMarks: Number,
+
+			reason: String,
+			reviewedBy: {
+				type: mongoose.Schema.Types.ObjectId,
+				ref: "User"
+			},
+
+			reviewedAt: Date
+		},
 		marks: {
 			type: Number,
 			required: true,

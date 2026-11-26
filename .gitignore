@@ -20,3 +20,6 @@ ehthumbs.db
 Thumbs.db
 scratch/  
  
+ .env
+ /.env
+ /home/coder/workspace/assessment-anurag-basuri-AI-Based-Exam-Evaluation-System/.env
