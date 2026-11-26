@@ -80,6 +80,14 @@ const SingleEvaluationSchema = new mongoose.Schema(
 				default: "not_required"
 			},
 
+			confidence: {
+				type: Number,
+				min: 0,
+				max: 1,
+			},
+
+			flags: [{type:string}],
+
 			decision: String,
 			originalMarks: Number,
 			finalMarks: Number,

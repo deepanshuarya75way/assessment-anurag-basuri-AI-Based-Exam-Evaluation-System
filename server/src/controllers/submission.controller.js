@@ -148,7 +148,7 @@ const getReviewQueue = asyncHandler(async(req, res) => {
 });
 
 // controller for deciding the review
-export const decideReview = asyncHandler(
+const decideReview = asyncHandler(
 	async(req, res) => {
 		const data = await SubmissionService.decideReview(
 			req.params.id,
